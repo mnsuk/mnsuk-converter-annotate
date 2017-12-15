@@ -1,0 +1,153 @@
+<function name="mnsuk-converter-annotate" products="all"
+	modified-by="data-explorer-admin" type="converter-java" type-in="application/vxml-unnormalized"
+	type-out="application/vxml-unnormalized" max-elt-id="33" modified="1488902251">
+	<prototype>
+		<label name="label">MNSUK AC Annotate</label>
+		<description name="description">
+<![CDATA[
+      MNSUK AC Annotate calls a remote Analytical Components Server via REST apis and returns specified facet values
+      as new content elements.
+      Converter version: !PROJECT_VERSION
+    ]]>
+		</description>
+		<declare name="wca-hostname" type="string" required="required">
+			<label>Hostname of the Analytical Components server</label>
+			<description>
+<![CDATA[
+        Hostname or IP address of the Analytical Components server.
+      ]]>
+			</description>
+		</declare>
+		<declare name="wca-port" type="string" initial-value="8393">
+			<label>Port number of the Analytical Components server</label>
+			<description>
+<![CDATA[
+        Port number of the Analytical Components server. The default would be 8393
+      ]]>
+			</description>
+		</declare>
+		<declare name="collection-id" type="string" required="required">
+			<label>Collection ID</label>
+			<description>
+<![CDATA[
+        ID of the annotation collection to be used.
+        This collection must be setup in the Annotation Administration Console or
+        the Analytical Components Administration Console.
+        The collection ID can be specified when creating a collection under the
+        'Advanced options' section.
+        The collection ID can be found in the Administration Console
+        by navigating to Actions: 'View collection settings'.
+      ]]></description>
+		</declare>
+		<declare name="enable-sentiment-analysis" type="flag">
+			<label>Enable Sentiment Annotations</label>
+			<description>
+Setting this to true will cause the converter to return any sentiment phrases, expressions and targets. To add sentiment annotations,
+        sentiment analysis must be enabled on the annotation collection being used.
+</description>
+</declare>
+<declare name="enable-ner-analysis" type="flag">
+			<label>Enable Named Entity Annotations</label>
+			<description>
+Setting this to true will cause the converter to return any person, location or orgnization annotations To add named entity annotations, the Named Entity Annotator must be enabled
+        on the annotation collection being used.
+</description>
+</declare>
+		<declare name="exclude-by-default" type="flag">
+			<label>Exclude Contents By Default</label>
+			<description>
+<![CDATA[
+        By default this converter uses a black list to exclude specific
+        content nodes from being analyzed (as specified in the 'Content List').
+        That is, only contents explicitly listed are ignored by this converter.
+        By checking this option, the behavior is flipped, and only fields explicitly
+        white-listed below will be processed by the converter.
+      ]]>
+			</description>
+		</declare>
+		<declare name="content-list" type="string-area">
+			<label>Content List</label>
+			<description>
+<![CDATA[
+        Provide a newline-separated list of content field names to either include
+        or exclude from annotation. If the 'Exclude Contents By Default' box is checked,
+        this acts as a white list, and any content fields not listed will be ignored.
+        If the box is not checked, this acts as a black list, and all content fields will be
+        analyzed unless specifically excluded here.]]>
+			</description>
+		</declare>
+		<declare name="username" type="string">
+			<label>User Name</label>
+			<description>
+				User name to use for authentication with the Content Analytics server.
+			</description>
+		</declare>
+		<declare name="password" type="password">
+			<label>Password</label>
+			<description>
+				Password to use for authentication with the Content Analytics server.
+			</description>
+		</declare>
+		<declare to-attribute="option-value" name="option-name-value-pairs"
+			type="replacement-pair-list" replace-text="FC Content Element Name"
+			with-text="AC Server Facet Path" replacement-node-name="option-data"
+			from-attribute="option-name">
+			<label name="label">Custom Content Configuration</label>
+			<description name="description">
+		<![CDATA[
+		    If Custom Annotations has been selected then add mappings between FC content elements 
+		    and AC Content Miner facets. Content Miner facets are specified
+			using the hierarchical facet path notation. e.g. ._word.noun.general
+			Hint: you can often deduce facet paths from facet treet in the Administration Console, alternatively 
+			you can discover facet paths with the following REST api commands
+			/api/v20/admin/login?username=aaaa&password=bbbb (to get the securityToken)
+			/api/v20/admin/collections/indexer/analyticsFacets/list?collection=xxx&securityToken=yyy
+			]]>
+			</description>
+		</declare>
+	</prototype>
+	<!-- Reformat option-name-value pairs -->
+	<declare name="all-user-options" type="nodeset" />
+	<set-var name="all-user-options">
+		<for-each select="$option-name-value-pairs" as="x">
+			<option>
+				<attribute name="name">field</attribute>
+				<value-of select="$x/@option-name" />:<value-of select="$x/@option-value" />
+			</option>
+		</for-each>
+	</set-var>
+	<parser type="java">
+		<copy-of select="$all-user-options" />
+		<option name="install-dir">
+			<value-of select="viv:value-of('install-dir', 'option')" />
+		</option>
+		<option name="plugin-name">annotate.plugin@annotate-converter</option>
+		<option name="wca-hostname">
+			<value-of select="$wca-hostname" />
+		</option>
+		<option name="wca-port">
+			<value-of select="$wca-port" />
+		</option>
+		<option name="collection-id">
+			<value-of select="$collection-id" />
+		</option>
+		<option name="exclude-by-default">
+			<value-of select="$exclude-by-default" />
+		</option>
+		<option name="content-list">
+			<value-of select="$content-list" />
+		</option>
+		<option name="enable-ner-analysis">
+			<value-of select="$enable-ner-analysis" />
+		</option>
+		<option name="enable-sentiment-analysis">
+			<value-of select="$enable-sentiment-analysis" />
+		</option>
+		<option name="username">
+			<value-of select="$username" />
+		</option>
+		<option name="password">
+			<value-of select="$password" />
+		</option>
+	</parser>
+</function>
